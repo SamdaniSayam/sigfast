@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="sigfast",  # The official PyPI name
-    version="0.1.0", # Reset back to v1.0 for the new brand
+    version="0.3.1, # Reset back to v1.0 for the new brand
     author="TripleS Studio", # Flex the agency name instead of your personal name!
     author_email="golamsamdani301416@gmail.com",
     description="High-performance, JIT-compiled time-series and signal processing core.",
