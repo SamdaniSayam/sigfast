@@ -14,4 +14,4 @@ Pandas is great, but it runs on a single thread. When analyzing millions of data
 
 ### Installation
 ```bash
-pip install sigfast
+pip install triples-sigfast

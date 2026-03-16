@@ -11,7 +11,6 @@ def ensure_numpy(data):
         return np.array(data, dtype=np.float64)
     return data.astype(np.float64)
 
-
 # --- 1. ROLLING AVERAGE ---
 @njit(parallel=True, fastmath=True)
 def _numba_rolling_avg(data, window_size):
@@ -25,22 +24,11 @@ def _numba_rolling_avg(data, window_size):
     return result
 
 def rolling_average(data, window_size: int):
-    """
-    Computes a moving average instantly using C-level multithreading.
-    Returns the same data type as the input (Pandas -> Pandas, Numpy -> Numpy).
-    """
-    if window_size <= 0:
-        raise ValueError("Window size must be greater than 0.")
-    if len(data) < window_size:
-        raise ValueError("Data length must be greater than the window size.")
-
+    if window_size <= 0: raise ValueError("Window size must be > 0.")
     clean_data = ensure_numpy(data)
     result = _numba_rolling_avg(clean_data, window_size)
-    
-    if isinstance(data, pd.Series):
-        return pd.Series(result, index=data.index[window_size - 1:])
+    if isinstance(data, pd.Series): return pd.Series(result, index=data.index[window_size - 1:])
     return result
-
 
 # --- 2. EXPONENTIAL MOVING AVERAGE (EMA) ---
 @njit(fastmath=True)
@@ -53,18 +41,12 @@ def _numba_ema(data, alpha):
     return result
 
 def ema(data, span: int):
-    """Calculates the Exponential Moving Average (EMA) at C-speed."""
-    if span <= 0:
-        raise ValueError("Span must be > 0")
-    
+    if span <= 0: raise ValueError("Span must be > 0")
     clean_data = ensure_numpy(data)
     alpha = 2.0 / (span + 1.0)
     result = _numba_ema(clean_data, alpha)
-    
-    if isinstance(data, pd.Series):
-        return pd.Series(result, index=data.index)
+    if isinstance(data, pd.Series): return pd.Series(result, index=data.index)
     return result
-
 
 # --- 3. Z-SCORE ANOMALY DETECTION ---
 @njit(parallel=True, fastmath=True)
@@ -72,66 +54,31 @@ def _numba_zscore_anomalies(data, threshold):
     n = len(data)
     mean_val = np.mean(data)
     std_val = np.std(data)
-    
     is_anomaly = np.zeros(n, dtype=np.bool_)
     for i in prange(n):
         z_score = abs(data[i] - mean_val) / std_val
-        if z_score > threshold:
-            is_anomaly[i] = True
-            
+        if z_score > threshold: is_anomaly[i] = True
     return is_anomaly
 
 def detect_anomalies(data, threshold: float = 3.0):
-    """Returns a boolean array where True indicates an anomaly (Z-score > threshold)."""
     clean_data = ensure_numpy(data)
     result = _numba_zscore_anomalies(clean_data, threshold)
-    
-    if isinstance(data, pd.Series):
-        return pd.Series(result, index=data.index)
+    if isinstance(data, pd.Series): return pd.Series(result, index=data.index)
     return result
 
+# --- 4. QUANT TRADING: EMA CROSSOVER ---
 @njit(fastmath=True)
-def _numba_ema(data, alpha):
-    n = len(data)
-    result = np.empty(n, dtype=np.float64)
-    result[0] = data[0]
+def _numba_crossover(fast_ema, slow_ema):
+    n = len(fast_ema)
+    signals = np.zeros(n, dtype=np.int8) 
     for i in range(1, n):
-        result[i] = alpha * data[i] + (1 - alpha) * result[i - 1]
-    return result
+        if fast_ema[i] > slow_ema[i] and fast_ema[i-1] <= slow_ema[i-1]: signals[i] = 1 # BUY
+        elif fast_ema[i] < slow_ema[i] and fast_ema[i-1] >= slow_ema[i-1]: signals[i] = -1 # SELL
+    return signals
 
-def ema(data, span: int):
-    """Calculates the Exponential Moving Average (EMA) at C-speed."""
-    if span <= 0:
-        raise ValueError("Span must be > 0")
+def ema_crossover_strategy(data, fast_span: int = 9, slow_span: int = 21):
     clean_data = ensure_numpy(data)
-    alpha = 2.0 / (span + 1.0)
-    result = _numba_ema(clean_data, alpha)
-    
-    if isinstance(data, pd.Series):
-        return pd.Series(result, index=data.index)
-    return result
-
-@njit(parallel=True, fastmath=True)
-def _numba_zscore_anomalies(data, threshold):
-    """Finds spikes in data (e.g., a broken engine sensor)"""
-    n = len(data)
-    mean_val = np.mean(data)
-    std_val = np.std(data)
-    
-    is_anomaly = np.zeros(n, dtype=np.bool_)
-    
-    for i in prange(n):
-        z_score = abs(data[i] - mean_val) / std_val
-        if z_score > threshold:
-            is_anomaly[i] = True
-            
-    return is_anomaly
-
-def detect_anomalies(data, threshold: float = 3.0):
-    """Returns a boolean array where True indicates an anomaly (Z-score > threshold)."""
-    clean_data = ensure_numpy(data)
-    result = _numba_zscore_anomalies(clean_data, threshold)
-    
-    if isinstance(data, pd.Series):
-        return pd.Series(result, index=data.index)
-    return result
+    fast_ema = _numba_ema(clean_data, 2.0 / (fast_span + 1.0))
+    slow_ema = _numba_ema(clean_data, 2.0 / (slow_span + 1.0))
+    signals = _numba_crossover(fast_ema, slow_ema)
+    return fast_ema, slow_ema, signals
