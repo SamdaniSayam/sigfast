@@ -6,6 +6,8 @@
 
 name: Python Package CI
 
+env:
+  PYTHONUTF8: "1"
 # ── TRIGGER ─────────────────────────────────────────────────
 on:
   push:
