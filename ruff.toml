@@ -1,0 +1,18 @@
+# ── Ruff Configuration for triples-sigfast ──────────────────
+line-length = 88
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (unused imports, undefined names)
+    "I",   # isort (import ordering)
+    "UP",  # pyupgrade (modern Python syntax)
+]
+ignore = [
+    "E501",  # line too long (we handle this with line-length above)
+]
+
+[lint.per-file-ignores]
+# Test files can have unused imports and longer lines
+"test_*.py" = ["F401", "E402"]

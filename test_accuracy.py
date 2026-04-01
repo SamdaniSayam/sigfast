@@ -1,7 +1,8 @@
+import sys
+import time
+
 import numpy as np
 import pandas as pd
-import time
-import sys
 
 # Import your newly optimized engine
 try:
@@ -15,7 +16,7 @@ print("Generating 1,000,000 random floating-point numbers...")
 # Set a random seed for reproducibility
 np.random.seed(42)
 data = np.random.rand(1_000_000)
-df = pd.DataFrame({'Signal': data})
+df = pd.DataFrame({"Signal": data})
 
 window = 50
 
@@ -23,7 +24,7 @@ window = 50
 print("\n🐼 Calculating 'Gold Standard' Moving Average using Pandas...")
 start = time.perf_counter()
 # Pandas calculates and drops the NaN values at the start
-pandas_result = df['Signal'].rolling(window=window).mean().dropna().to_numpy()
+pandas_result = df["Signal"].rolling(window=window).mean().dropna().to_numpy()
 pandas_time = time.perf_counter() - start
 print(f"   -> Pandas finished in {pandas_time:.4f} seconds.")
 
@@ -39,7 +40,9 @@ print("\n⚖️ COMPARING RESULTS AT THE 8TH DECIMAL PLACE...")
 
 # Check if the arrays are exactly the same length
 if len(pandas_result) != len(sigfast_result):
-    print(f"❌ FAIL: Length mismatch! Pandas: {len(pandas_result)} | SigFast: {len(sigfast_result)}")
+    print(
+        f"❌ FAIL: Length mismatch! Pandas: {len(pandas_result)} | SigFast: {len(sigfast_result)}"
+    )
     sys.exit(1)
 
 # Check if every single number is mathematically identical (within floating point precision)
@@ -47,7 +50,9 @@ is_accurate = np.allclose(pandas_result, sigfast_result, atol=1e-8)
 
 if is_accurate:
     print("✅ SUCCESS: SigFast is 100% mathematically identical to Pandas.")
-    print(f"🚀 PERFORMANCE: SigFast achieved a {pandas_time/sigfast_time:.1f}x speedup with zero accuracy loss.")
+    print(
+        f"🚀 PERFORMANCE: SigFast achieved a {pandas_time / sigfast_time:.1f}x speedup with zero accuracy loss."
+    )
 else:
     print("❌ FAIL: SigFast produced different mathematical results than Pandas.")
     # Print the first mismatch to see where it broke

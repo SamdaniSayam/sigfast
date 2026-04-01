@@ -1,2 +1,6 @@
 pandas
 memory-profiler
+numpy
+numba
+pytest
+ruff
