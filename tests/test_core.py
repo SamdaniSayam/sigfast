@@ -12,7 +12,7 @@ import sys
 import numpy as np
 import pytest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from triples_sigfast.core import (
     detect_anomalies,
     ema,
@@ -21,6 +21,7 @@ from triples_sigfast.core import (
 )
 
 # --- Fixtures ---
+
 
 @pytest.fixture
 def sample_data():
@@ -36,6 +37,7 @@ def flat_data():
 
 
 # --- Test Suites ---
+
 
 class TestRollingAverage:
     def test_output_length(self, sample_data):
@@ -63,6 +65,7 @@ class TestRollingAverage:
         result = rolling_average([1.0, 2.0, 3.0, 4.0, 5.0], 2)
         assert len(result) == 4
 
+
 class TestEma:
     def test_output_length(self, sample_data):
         result = ema(sample_data, 10)
@@ -71,6 +74,7 @@ class TestEma:
     def test_invalid_span_zero(self, sample_data):
         with pytest.raises(ValueError):
             ema(sample_data, 0)
+
 
 class TestDetectAnomalies:
     def test_output_length(self, sample_data):
@@ -90,6 +94,7 @@ class TestDetectAnomalies:
         data[50] = 1000.0
         result = detect_anomalies(data)
         assert result[50]
+
 
 class TestEmaCrossoverStrategy:
     def test_output_structure(self, sample_data):
