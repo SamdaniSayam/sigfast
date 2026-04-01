@@ -5,7 +5,7 @@ import sys
 
 # Import your newly optimized engine
 try:
-    from sigfast.core import rolling_average
+    from triples_sigfast.core import rolling_average
 except ImportError:
     print("❌ Error: Could not find sigfast. Make sure you are in the root directory.")
     sys.exit(1)

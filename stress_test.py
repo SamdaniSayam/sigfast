@@ -12,7 +12,7 @@ except ImportError:
 
 # Import your Titan Engine
 try:
-    from sigfast.core import rolling_average
+    from triples_sigfast.core import rolling_average
 except ImportError:
     print("❌ Error: Could not find sigfast library.")
     sys.exit(1)
