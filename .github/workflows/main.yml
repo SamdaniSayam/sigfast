@@ -1,0 +1,77 @@
+# ============================================================
+#  triples-sigfast — CI Pipeline
+#  Runs on every push/PR to main
+#  Matrix: 3 OS × 3 Python versions = 9 parallel jobs
+# ============================================================
+
+name: Python Package CI
+
+# ── TRIGGER ─────────────────────────────────────────────────
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+# ── JOBS ────────────────────────────────────────────────────
+jobs:
+  build:
+    name: Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
+
+    # 3 OS × 3 Python = 9 parallel runners
+    strategy:
+      fail-fast: false   # don't cancel other jobs if one fails
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+      # ── 1. Check out your code ───────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up the right Python version ──────────────
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # ── 3. Cache pip (speeds up future runs) ────────────
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
+
+      # ── 4. Upgrade pip itself ────────────────────────────
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      # ── 5. Install runtime + dev dependencies ───────────
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      # ── 6. Install YOUR library ──────────────────────────
+      - name: Install triples-sigfast
+        run: pip install .
+
+      # ── 7. Smoke test — did it even import? ─────────────
+      - name: Smoke test (import check)
+        run: python -c "import triples_sigfast; print('✅ Import successful')"
+
+      # ── 8. Mathematical accuracy test ───────────────────
+      - name: Run accuracy test
+        run: python test_accuracy.py
+
+      # ── 9. Performance stress test ───────────────────────
+      - name: Run stress test
+        run: python stress_test.py
