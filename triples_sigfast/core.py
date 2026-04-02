@@ -541,8 +541,8 @@ _ATTENUATION_MATERIALS = {
 def attenuation(
     thickness_cm: float,
     material: str = "lead",
-    mu_rho: float = None,
-    density: float = None,
+    mu_rho: float | None = None,
+    density: float | None = None,
 ):
     """
     Calculates gamma ray transmission through a shielding layer.

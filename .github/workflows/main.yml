@@ -1,24 +1,15 @@
-# ============================================================
-#  triples-sigfast — CI Pipeline
-#  Runs on every push/PR to main
-# ============================================================
-
 name: Python Package CI
 
 env:
   PYTHONUTF8: "1"
 
-# ── TRIGGER ─────────────────────────────────────────────────
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
 
-# ── JOBS ────────────────────────────────────────────────────
 jobs:
-
-  # ── LINT JOB (runs once, fast) ───────────────────────────
   lint:
     name: Lint with Ruff
     runs-on: ubuntu-latest
@@ -41,7 +32,6 @@ jobs:
       - name: Check formatting
         run: ruff format --check .
 
-  # ── BUILD JOB (3 OS x 3 Python = 9 parallel jobs) ────────
   build:
     name: Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
     needs: lint

@@ -70,6 +70,7 @@ class TestSavitzkyGolay:
 
     def test_accepts_pandas_series(self):
         import pandas as pd
+
         s = pd.Series(np.random.randn(100))
         result = savitzky_golay(s, window=11, polyorder=3)
         assert isinstance(result, pd.Series)
