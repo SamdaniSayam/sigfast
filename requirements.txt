@@ -1,2 +1,6 @@
 numpy
 numba
+pandas
+uproot
+awkward
+matplotlib

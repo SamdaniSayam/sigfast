@@ -2,5 +2,9 @@ pandas
 memory-profiler
 numpy
 numba
-pytest
 ruff
+uproot
+awkward
+matplotlib
+pytest
+pytest-cov

@@ -123,3 +123,31 @@ MIT License — see [LICENSE](LICENSE) for details.
 **TripleS Studio**
 - PyPI: [triples-sigfast](https://pypi.org/project/triples-sigfast/)
 - GitHub: [SamdaniSayam/triples-sigfast](https://github.com/SamdaniSayam/triples-sigfast)
+
+## ☢️ Nuclear Physics Features
+
+Built for radiation shielding research with Geant4 + ROOT workflows:
+
+- **Savitzky-Golay Filter** — Smooths Monte Carlo energy spectra while preserving peak shape
+- **Peak Finder** — Detects gamma ray lines and neutron capture peaks
+- **Flux-to-Dose Converter** — ICRP 74 standard conversion (particles/cm²/s → μSv/hr)
+- **Shielding Attenuation** — Beer-Lambert law for 9 built-in materials (lead, polyethylene, borated_poly, polysulfone, etc.)
+
+### Quick Example
+```python
+import uproot
+from triples_sigfast import savitzky_golay, find_peaks, flux_to_dose, attenuation
+
+# Read Geant4 ROOT output
+file = uproot.open("simulation.root")
+counts = file["neutron_spectrum"].values()
+
+# Smooth and analyze
+smoothed = savitzky_golay(counts, window=11, polyorder=3)
+peaks = find_peaks(smoothed, min_height=50, min_distance=10)
+
+# Dose and shielding
+dose = flux_to_dose(flux=1e6, energy_mev=2.35, particle="neutron")
+T = attenuation(thickness_cm=10, material="lead")
+print(f"Dose: {dose:.4f} uSv/hr | Lead transmission: {T*100:.2f}%")
+```
