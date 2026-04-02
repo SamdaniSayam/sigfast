@@ -1,8 +1,14 @@
+# ============================================================
+#  Auto-generate CHANGELOG on every GitHub Release
+#  Can also be triggered manually from the Actions tab
+# ============================================================
+
 name: Generate Changelog
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   changelog:
@@ -23,6 +29,7 @@ jobs:
           CLIFF_VERSION=$(curl -s https://api.github.com/repos/orhun/git-cliff/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
           curl -sSL "https://github.com/orhun/git-cliff/releases/download/${CLIFF_VERSION}/git-cliff-${CLIFF_VERSION#v}-x86_64-unknown-linux-musl.tar.gz" | tar -xz
           sudo mv git-cliff-*/git-cliff /usr/local/bin/
+          git-cliff --version
 
       - name: Generate CHANGELOG.md
         run: git-cliff --config cliff.toml --output CHANGELOG.md
