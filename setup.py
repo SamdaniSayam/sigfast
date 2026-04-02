@@ -6,7 +6,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="triples-sigfast",
-    version="1.0.1",  # Bump to 1.0.1 since we're updating the pipeline!
+    version="1.0.3",  # Bump to 1.0.1 since we're updating the pipeline!
     author="TripleS Studio",
     description="An enterprise-grade, JIT-compiled time-series engine stress-tested on 100M+ row datasets.",
     long_description=open("README.md").read(),
