@@ -1,5 +1,3 @@
-# ── git-cliff configuration ──────────────────────────────────
-
 [changelog]
 header = """
 # Changelog\n
@@ -12,9 +10,9 @@ body = """
 ## [Unreleased]
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
-### {{ group | strtitle }}
+### {{ group }}
 {% for commit in commits %}
-- {{ commit.message | upper_first }}\
+- {{ commit.message | upper_first }}
 {% endfor %}
 {% endfor %}\n
 """
