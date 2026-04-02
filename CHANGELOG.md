@@ -6,7 +6,20 @@ All notable changes to triples-sigfast will be documented here.
 
 ### Bug Fixes
 
+- Clean up setup.py, fix encoding, bump python_requires to 3.10
+
+- Add trailing newline to setup.py
+
+- Include requirements.txt in package build via MANIFEST.in
+
+
+## [1.1.0] - 2026-04-02
+
+### Bug Fixes
+
 - Remove invalid strtitle filter from cliff.toml template
+
+- Correct type hints in attenuation and clean main.yml
 
 
 ### CI/CD
@@ -14,6 +27,16 @@ All notable changes to triples-sigfast will be documented here.
 - Fix changelog YAML indentation
 
 - Rewrite changelog workflow with manual trigger
+
+
+### Documentation
+
+- Auto-update CHANGELOG for main
+
+
+### Features
+
+- Add nuclear physics features - savitzky_golay, find_peaks, flux_to_dose, attenuation
 
 
 ## [1.0.3] - 2026-04-02
