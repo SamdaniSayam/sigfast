@@ -96,6 +96,7 @@ class TestGPBuildup:
     def test_gp_fallback_c_near_zero(self):
         """When c≈0, GP uses linear approximation B = 1 + (b-1)*x."""
         from unittest.mock import patch
+
         with patch.dict(
             "triples_sigfast.nuclear.shielding._GP_COEFFS",
             {"lead": {1.0: (1.5, 0.0, 1.0, 20.0, 0.01)}},
@@ -106,6 +107,7 @@ class TestGPBuildup:
     def test_gp_fallback_k_near_one(self):
         """When K≈1, GP uses linear approximation."""
         from unittest.mock import patch
+
         with patch.dict(
             "triples_sigfast.nuclear.shielding._GP_COEFFS",
             {"lead": {1.0: (1.5, 1e-6, 1.0, 20.0, 0.0)}},
