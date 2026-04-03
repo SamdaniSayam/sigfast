@@ -25,12 +25,12 @@ import numpy as np
 # ── Format detection ──────────────────────────────────────────────────────────
 
 _EXT_MAP: dict[str, str] = {
-    ".root":  "geant4",
+    ".root": "geant4",
     ".flair": "fluka",
-    ".lis":   "fluka",
+    ".lis": "fluka",
     ".mctal": "mcnp",
-    ".det":   "serpent",
-    ".m":     "serpent",
+    ".det": "serpent",
+    ".m": "serpent",
 }
 
 
@@ -38,13 +38,13 @@ def _detect_format(filepath: str) -> str:
     ext = Path(filepath).suffix.lower()
     if ext not in _EXT_MAP:
         raise ValueError(
-            f"Unrecognised file extension '{ext}'. "
-            f"Supported: {list(_EXT_MAP.keys())}"
+            f"Unrecognised file extension '{ext}'. Supported: {list(_EXT_MAP.keys())}"
         )
     return _EXT_MAP[ext]
 
 
 # ── SimReader ─────────────────────────────────────────────────────────────────
+
 
 class SimReader:
     """
@@ -79,6 +79,7 @@ class SimReader:
     def _load_backend(self, filepath: str, fmt: str):
         if fmt == "geant4":
             from triples_sigfast.io.root_reader import RootReader
+
             return RootReader(filepath)
         if fmt == "fluka":
             return _FlukaBackend(filepath)
@@ -133,6 +134,7 @@ class SimReader:
 
 # ── FLUKA backend ─────────────────────────────────────────────────────────────
 
+
 class _FlukaBackend:
     """
     Minimal FLUKA text output parser.
@@ -159,7 +161,7 @@ class _FlukaBackend:
             if line.startswith("#") or not line:
                 if current_key and energies:
                     self._data[current_key] = (
-                        np.array(counts,   dtype=np.float64),
+                        np.array(counts, dtype=np.float64),
                         np.array(energies, dtype=np.float64),
                     )
                     energies, counts = [], []
@@ -177,7 +179,7 @@ class _FlukaBackend:
 
         if current_key and energies:
             self._data[current_key] = (
-                np.array(counts,   dtype=np.float64),
+                np.array(counts, dtype=np.float64),
                 np.array(energies, dtype=np.float64),
             )
 
@@ -196,10 +198,10 @@ class _FlukaBackend:
     def get_tally(self, name: str) -> dict:
         counts, energies = self.get_spectrum(name)
         return {
-            "name":   name,
+            "name": name,
             "values": counts,
             "errors": np.zeros_like(counts),
-            "bins":   energies,
+            "bins": energies,
         }
 
     def summary(self) -> None:
@@ -214,6 +216,7 @@ class _FlukaBackend:
 
 
 # ── MCNP backend ──────────────────────────────────────────────────────────────
+
 
 class _MCNPBackend:
     """
@@ -239,13 +242,13 @@ class _MCNPBackend:
             if not lines:
                 continue
 
-            header    = lines[0].split()
+            header = lines[0].split()
             tally_num = header[0] if header else "unknown"
-            key       = f"tally_{tally_num}"
+            key = f"tally_{tally_num}"
 
             energies: list[float] = []
-            values:   list[float] = []
-            errors:   list[float] = []
+            values: list[float] = []
+            errors: list[float] = []
             mode: str | None = None  # 'energy' or 'vals'
 
             for line in lines[1:]:
@@ -286,10 +289,10 @@ class _MCNPBackend:
             if values:
                 n = min(len(energies), len(values))
                 self._tallies[key] = {
-                    "name":   key,
-                    "values": np.array(values[:n],   dtype=np.float64),
-                    "errors": np.array(errors[:n],   dtype=np.float64),
-                    "bins":   np.array(energies[:n], dtype=np.float64),
+                    "name": key,
+                    "values": np.array(values[:n], dtype=np.float64),
+                    "errors": np.array(errors[:n], dtype=np.float64),
+                    "bins": np.array(energies[:n], dtype=np.float64),
                 }
 
     def get_spectrum(self, key=None):
@@ -300,7 +303,9 @@ class _MCNPBackend:
         if key not in self._tallies:
             matches = [k for k in self._tallies if key in k]
             if not matches:
-                raise KeyError(f"Key '{key}' not found. Available: {list(self._tallies)}")
+                raise KeyError(
+                    f"Key '{key}' not found. Available: {list(self._tallies)}"
+                )
             key = matches[0]
         t = self._tallies[key]
         return t["values"], t["bins"]
@@ -328,6 +333,7 @@ class _MCNPBackend:
 
 # ── SERPENT backend ───────────────────────────────────────────────────────────
 
+
 class _SerpentBackend:
     """
     SERPENT detector output parser (.det / .m files).
@@ -351,10 +357,8 @@ class _SerpentBackend:
         )
 
         for match in pattern.finditer(content):
-            name   = match.group(1)
-            values = re.findall(
-                r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", match.group(2)
-            )
+            name = match.group(1)
+            values = re.findall(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", match.group(2))
             if not values:
                 continue
 
@@ -365,19 +369,19 @@ class _SerpentBackend:
             if len(arr) % 12 == 0 and len(arr) >= 12:
                 arr = arr.reshape(-1, 12)
                 self._detectors[name] = {
-                    "name":   name,
+                    "name": name,
                     "values": arr[:, 10],
                     "errors": arr[:, 11],
-                    "bins":   0.5 * (arr[:, 0] + arr[:, 1]),
-                    "raw":    arr,
+                    "bins": 0.5 * (arr[:, 0] + arr[:, 1]),
+                    "raw": arr,
                 }
             else:
                 self._detectors[name] = {
-                    "name":   name,
+                    "name": name,
                     "values": arr,
                     "errors": np.zeros_like(arr),
-                    "bins":   np.arange(len(arr), dtype=np.float64),
-                    "raw":    arr,
+                    "bins": np.arange(len(arr), dtype=np.float64),
+                    "raw": arr,
                 }
 
     def get_spectrum(self, key=None):

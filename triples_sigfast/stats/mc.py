@@ -20,6 +20,7 @@ from numba import njit, prange
 
 # ── 1. Relative Error ────────────────────────────────────────────────────────
 
+
 @njit(parallel=True, cache=True)  # pragma: no cover
 def relative_error(counts: np.ndarray) -> np.ndarray:
     """
@@ -68,6 +69,7 @@ def relative_error(counts: np.ndarray) -> np.ndarray:
 
 
 # ── 2. Figure of Merit ───────────────────────────────────────────────────────
+
 
 @njit(cache=True)  # pragma: no cover
 def figure_of_merit(
@@ -122,6 +124,7 @@ def figure_of_merit(
 
 # ── 3. Convergence Check ─────────────────────────────────────────────────────
 
+
 @njit(parallel=True, cache=True)  # pragma: no cover
 def is_converged(
     counts: np.ndarray,
@@ -168,6 +171,7 @@ def is_converged(
 
 
 # ── 4. Uncertainty Propagation ───────────────────────────────────────────────
+
 
 @njit(parallel=True, cache=True)  # pragma: no cover
 def propagate_error(
@@ -226,7 +230,7 @@ def propagate_error(
         # σ_total² = (∂f/∂N)² σ_N² + (∂f/∂ε)² σ_ε²
         # f = N/ε  →  ∂f/∂N = 1/ε,  ∂f/∂ε = -N/ε²
         term_counts = (sigma_N / eff) ** 2
-        term_eff    = ((N / (eff * eff)) * sigma_eff) ** 2
+        term_eff = ((N / (eff * eff)) * sigma_eff) ** 2
 
         result[i] = np.sqrt(term_counts + term_eff)
 

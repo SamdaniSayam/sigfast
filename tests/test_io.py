@@ -21,6 +21,7 @@ from triples_sigfast.io.sim_reader import SimReader, _detect_format
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def make_root_file(path: str, histograms: dict) -> None:
     """Create a real ROOT file with TH1F histograms using uproot.writing."""
     import uproot.writing as urw
@@ -60,11 +61,22 @@ vals
 def make_serpent_file(path: str, n_bins: int = 3) -> None:
     rows = []
     for i in range(n_bins):
-        e_low  = float(i)
+        e_low = float(i)
         e_high = float(i + 1)
-        row    = [e_low, e_high, 0.5, 1e-4, 0.05,
-                  0.0,   0.0,    0.0, 0.0,  0.0,
-                  float(i + 1) * 1e-3, 0.03]
+        row = [
+            e_low,
+            e_high,
+            0.5,
+            1e-4,
+            0.05,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            float(i + 1) * 1e-3,
+            0.03,
+        ]
         rows.append("  ".join(f"{v:.6E}" for v in row))
     block = "\n".join(rows)
     content = f"DET_NEUTRON_FLUX = [\n{block}\n];\n"
@@ -74,8 +86,8 @@ def make_serpent_file(path: str, n_bins: int = 3) -> None:
 
 # ── Format detection ──────────────────────────────────────────────────────────
 
-class TestDetectFormat:
 
+class TestDetectFormat:
     def test_root_extension(self):
         assert _detect_format("sim.root") == "geant4"
 
@@ -104,37 +116,42 @@ class TestDetectFormat:
 
 # ── RootReader ────────────────────────────────────────────────────────────────
 
-class TestRootReader:
 
+class TestRootReader:
     @pytest.fixture
     def root_file(self, tmp_path):
         path = str(tmp_path / "test.root")
-        rng  = np.random.default_rng(0)
+        rng = np.random.default_rng(0)
         counts = rng.integers(100, 1000, size=100).astype(np.float64)
-        edges  = np.linspace(0, 10, 101)
-        make_root_file(path, {"neutron": (counts, edges),
-                               "gamma":   (counts * 0.5, edges)})
+        edges = np.linspace(0, 10, 101)
+        make_root_file(
+            path, {"neutron": (counts, edges), "gamma": (counts * 0.5, edges)}
+        )
         return path
 
     def test_repr(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         assert "RootReader" in repr(r)
 
     def test_keys_returns_list(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         assert isinstance(r.keys(), list)
         assert len(r.keys()) >= 2
 
     def test_histogram_keys(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         hkeys = r.histogram_keys()
         assert len(hkeys) >= 2
 
     def test_get_spectrum_exact_key(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         key = r.keys()[0]
         counts, energies = r.get_spectrum(key)
@@ -145,18 +162,21 @@ class TestRootReader:
 
     def test_get_spectrum_partial_key(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         counts, energies = r.get_spectrum("neutron")
         assert len(counts) == 100
 
     def test_get_spectrum_missing_key_raises(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         with pytest.raises(KeyError):
             r.get_spectrum("nonexistent_histogram_xyz")
 
     def test_get_all_spectra(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         all_s = r.get_all_spectra()
         assert len(all_s) >= 2
@@ -165,18 +185,21 @@ class TestRootReader:
 
     def test_bin_centres_within_edges(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         counts, energies = r.get_spectrum("neutron")
-        assert energies[0]  >= 0.0
+        assert energies[0] >= 0.0
         assert energies[-1] <= 10.0
 
     def test_export_csv(self, root_file, tmp_path):
         from triples_sigfast.io.root_reader import RootReader
-        r      = RootReader(root_file)
+
+        r = RootReader(root_file)
         outcsv = str(tmp_path / "out.csv")
         r.export_csv(outcsv)
         assert os.path.exists(outcsv)
         import pandas as pd
+
         df = pd.read_csv(outcsv)
         assert len(df) == 100
         assert len(df.columns) >= 4
@@ -186,7 +209,8 @@ class TestRootReader:
         import h5py
 
         from triples_sigfast.io.root_reader import RootReader
-        r     = RootReader(root_file)
+
+        r = RootReader(root_file)
         outh5 = str(tmp_path / "out.h5")
         r.export_hdf5(outh5)
         assert os.path.exists(outh5)
@@ -195,12 +219,14 @@ class TestRootReader:
 
     def test_context_manager(self, root_file):
         from triples_sigfast.io.root_reader import RootReader
+
         with RootReader(root_file) as r:
             counts, _ = r.get_spectrum("neutron")
         assert len(counts) == 100
 
     def test_summary_runs_without_error(self, root_file, capsys):
         from triples_sigfast.io.root_reader import RootReader
+
         r = RootReader(root_file)
         r.summary()
         captured = capsys.readouterr()
@@ -209,14 +235,14 @@ class TestRootReader:
 
 # ── SimReader — Geant4 ────────────────────────────────────────────────────────
 
-class TestSimReaderGeant4:
 
+class TestSimReaderGeant4:
     @pytest.fixture
     def root_file(self, tmp_path):
-        path   = str(tmp_path / "sim.root")
-        rng    = np.random.default_rng(1)
+        path = str(tmp_path / "sim.root")
+        rng = np.random.default_rng(1)
         counts = rng.integers(100, 500, size=50).astype(np.float64)
-        edges  = np.linspace(0, 5, 51)
+        edges = np.linspace(0, 5, 51)
         make_root_file(path, {"gamma_spectrum": (counts, edges)})
         return path
 
@@ -240,13 +266,13 @@ class TestSimReaderGeant4:
 
 # ── SimReader — FLUKA ─────────────────────────────────────────────────────────
 
-class TestSimReaderFLUKA:
 
+class TestSimReaderFLUKA:
     @pytest.fixture
     def fluka_file(self, tmp_path):
-        path     = str(tmp_path / "sim.flair")
+        path = str(tmp_path / "sim.flair")
         energies = np.linspace(0.1, 10.0, 20)
-        counts   = np.abs(np.random.default_rng(2).standard_normal(20)) * 100
+        counts = np.abs(np.random.default_rng(2).standard_normal(20)) * 100
         make_fluka_file(path, {"neutron_fluence": (energies, counts)})
         return path
 
@@ -261,10 +287,10 @@ class TestSimReaderFLUKA:
         assert len(counts) == len(energies)
 
     def test_get_tally(self, fluka_file):
-        r      = SimReader(fluka_file)
-        tally  = r.get_tally("neutron_fluence")
+        r = SimReader(fluka_file)
+        tally = r.get_tally("neutron_fluence")
         assert "values" in tally
-        assert "bins"   in tally
+        assert "bins" in tally
         assert len(tally["values"]) > 0
 
     def test_keys(self, fluka_file):
@@ -278,8 +304,8 @@ class TestSimReaderFLUKA:
 
 # ── SimReader — MCNP ──────────────────────────────────────────────────────────
 
-class TestSimReaderMCNP:
 
+class TestSimReaderMCNP:
     @pytest.fixture
     def mctal_file(self, tmp_path):
         path = str(tmp_path / "sim.mctal")
@@ -296,13 +322,13 @@ class TestSimReaderMCNP:
         assert len(counts) > 0
 
     def test_get_tally_by_name(self, mctal_file):
-        r     = SimReader(mctal_file)
+        r = SimReader(mctal_file)
         tally = r.get_tally("tally_4")
         assert "values" in tally
         assert "errors" in tally
 
     def test_tally_errors_finite(self, mctal_file):
-        r     = SimReader(mctal_file)
+        r = SimReader(mctal_file)
         tally = r.get_tally("tally_4")
         assert np.all(np.isfinite(tally["errors"]))
 
@@ -318,8 +344,8 @@ class TestSimReaderMCNP:
 
 # ── SimReader — SERPENT ───────────────────────────────────────────────────────
 
-class TestSimReaderSerpent:
 
+class TestSimReaderSerpent:
     @pytest.fixture
     def serpent_file(self, tmp_path):
         path = str(tmp_path / "sim.det")
@@ -343,7 +369,7 @@ class TestSimReaderSerpent:
         np.testing.assert_allclose(energies[1], 1.5, rtol=1e-6)
 
     def test_get_tally(self, serpent_file):
-        r     = SimReader(serpent_file)
+        r = SimReader(serpent_file)
         tally = r.get_tally("DET_NEUTRON_FLUX")
         assert "values" in tally
         assert len(tally["values"]) == 5

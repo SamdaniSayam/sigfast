@@ -18,8 +18,7 @@ try:
     import uproot
 except ImportError as e:
     raise ImportError(
-        "uproot is required for RootReader. "
-        "Install it with: pip install uproot"
+        "uproot is required for RootReader. Install it with: pip install uproot"
     ) from e  # pragma: no cover
 
 
@@ -223,8 +222,7 @@ class RootReader:
             import h5py
         except ImportError as e:
             raise ImportError(
-                "h5py is required for HDF5 export. "
-                "Install with: pip install h5py"
+                "h5py is required for HDF5 export. Install with: pip install h5py"
             ) from e  # pragma: no cover
 
         spectra = self.get_all_spectra()
@@ -235,7 +233,7 @@ class RootReader:
             for key, (counts, energies) in spectra.items():
                 safe_key = key.replace(";1", "").replace("/", "_").lstrip("/")
                 grp = f.create_group(safe_key)
-                grp.create_dataset("counts",   data=counts)
+                grp.create_dataset("counts", data=counts)
                 grp.create_dataset("energies", data=energies)
 
         print(f"Exported {len(spectra)} histogram(s) → {output_path}")
@@ -259,10 +257,7 @@ class RootReader:
         return matches[0]
 
     def __repr__(self) -> str:
-        return (
-            f"RootReader('{self.filepath}', "
-            f"{len(self._keys)} object(s))"
-        )
+        return f"RootReader('{self.filepath}', {len(self._keys)} object(s))"
 
     def __enter__(self):
         return self

@@ -19,6 +19,7 @@ from triples_sigfast.stats.mc import (
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def typical_counts():
     """Realistic gamma-ray tally: 10k–100k counts per bin."""
@@ -34,8 +35,8 @@ def sparse_counts():
 
 # ── relative_error ────────────────────────────────────────────────────────────
 
-class TestRelativeError:
 
+class TestRelativeError:
     def test_poisson_formula(self):
         """R = 1/sqrt(N) for Poisson statistics."""
         counts = np.array([100.0, 400.0, 10_000.0])
@@ -64,7 +65,7 @@ class TestRelativeError:
 
     def test_r_decreases_with_more_counts(self):
         """Higher counts → smaller relative error."""
-        low  = relative_error(np.array([100.0]))
+        low = relative_error(np.array([100.0]))
         high = relative_error(np.array([10_000.0]))
         assert low[0] > high[0]
 
@@ -81,8 +82,8 @@ class TestRelativeError:
 
 # ── figure_of_merit ──────────────────────────────────────────────────────────
 
-class TestFigureOfMerit:
 
+class TestFigureOfMerit:
     def test_basic_formula(self):
         """FOM = 1 / (R² × T)."""
         R = np.array([0.1])
@@ -112,7 +113,7 @@ class TestFigureOfMerit:
         """For fixed R, FOM ∝ 1/T so longer runs → lower FOM per unit R."""
         R = np.array([0.05])
         fom_short = figure_of_merit(R, cpu_time=100.0)
-        fom_long  = figure_of_merit(R, cpu_time=10_000.0)
+        fom_long = figure_of_merit(R, cpu_time=10_000.0)
         assert fom_short[0] > fom_long[0]
 
     def test_output_shape_matches_input(self, typical_counts):
@@ -135,8 +136,8 @@ class TestFigureOfMerit:
 
 # ── is_converged ─────────────────────────────────────────────────────────────
 
-class TestIsConverged:
 
+class TestIsConverged:
     def test_high_count_bins_converge(self):
         """10k counts → R=0.01 < 0.05 threshold → converged."""
         counts = np.array([10_000.0, 10_000.0])
@@ -169,8 +170,8 @@ class TestIsConverged:
 
     def test_strict_threshold_002(self):
         """Publication-critical: 0.02 threshold requires N > 2500."""
-        counts_pass = np.array([10_000.0])   # R=0.01 < 0.02
-        counts_fail = np.array([1_000.0])    # R=0.032 > 0.02
+        counts_pass = np.array([10_000.0])  # R=0.01 < 0.02
+        counts_fail = np.array([1_000.0])  # R=0.032 > 0.02
         assert is_converged(counts_pass, threshold=0.02)[0]
         assert not is_converged(counts_fail, threshold=0.02)[0]
 
@@ -181,15 +182,15 @@ class TestIsConverged:
     def test_mixed_array(self, sparse_counts):
         """Zero and low-count bins fail, high-count bins pass."""
         result = is_converged(sparse_counts, threshold=0.05)
-        assert not result[0]    # 0 counts
-        assert not result[1]    # 1 count
-        assert result[5]        # 10,000 counts
+        assert not result[0]  # 0 counts
+        assert not result[1]  # 1 count
+        assert result[5]  # 10,000 counts
 
 
 # ── propagate_error ──────────────────────────────────────────────────────────
 
-class TestPropagateError:
 
+class TestPropagateError:
     def test_ideal_detector_pure_poisson(self):
         """ε=1.0 → σ_total = sqrt(N) (pure Poisson, no efficiency term)."""
         counts = np.array([100.0])
@@ -204,7 +205,7 @@ class TestPropagateError:
     def test_efficiency_increases_uncertainty(self):
         """Lower efficiency → larger propagated uncertainty."""
         counts = np.array([1000.0])
-        sigma_ideal    = propagate_error(counts, efficiency=1.0)
+        sigma_ideal = propagate_error(counts, efficiency=1.0)
         sigma_detector = propagate_error(counts, efficiency=0.35)
         assert sigma_detector[0] > sigma_ideal[0]
 
@@ -254,17 +255,17 @@ class TestPropagateError:
 
 # ── Integration ───────────────────────────────────────────────────────────────
 
-class TestMCIntegration:
 
+class TestMCIntegration:
     def test_full_workflow(self, typical_counts):
         """
         Simulate a complete MC analysis pipeline:
         counts → R → FOM → convergence check → propagated uncertainty
         """
-        R       = relative_error(typical_counts)
-        fom     = figure_of_merit(R, cpu_time=7200.0)
-        conv    = is_converged(typical_counts, threshold=0.05)
-        sigma   = propagate_error(typical_counts, efficiency=0.35)
+        R = relative_error(typical_counts)
+        fom = figure_of_merit(R, cpu_time=7200.0)
+        conv = is_converged(typical_counts, threshold=0.05)
+        sigma = propagate_error(typical_counts, efficiency=0.35)
 
         # All 50 bins of typical_counts (10k–100k) should converge at 5%
         assert conv.all(), "All high-statistics bins should converge"
@@ -274,9 +275,9 @@ class TestMCIntegration:
 
     def test_pipeline_with_sparse_counts(self, sparse_counts):
         """Low-stat bins: only the 10k bin should converge."""
-        R    = relative_error(sparse_counts)
+        R = relative_error(sparse_counts)
         conv = is_converged(sparse_counts, threshold=0.05)
 
-        assert np.isinf(R[0])           # zero bin
-        assert conv[-1]                  # 10,000 counts → converged
-        assert not conv[0]               # zero bin → not converged
+        assert np.isinf(R[0])  # zero bin
+        assert conv[-1]  # 10,000 counts → converged
+        assert not conv[0]  # zero bin → not converged
