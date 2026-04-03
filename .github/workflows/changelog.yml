@@ -2,36 +2,36 @@ name: Generate Changelog
 
 on:
   release:
-    types: [published] # Runs when you publish a release
+    types: [published]
 
 permissions:
-  contents: write # Allows the robot to save the changelog to your repo
+  contents: write
 
 jobs:
   changelog:
     runs-on: ubuntu-latest
     steps:
-      # 1. FIX: Checkout the code and DON'T detach the head
+      # 1. Force checkout of the 'main' branch specifically
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Download entire history so we can see all tags
-          ref: main      # Explicitly stay on the main branch
+          fetch-depth: 0
+          ref: main 
 
-      # 2. Generate the changelog (using git-cliff or similar)
+      # 2. Generate the changelog
       - name: Generate Changelog
         uses: orhun/git-cliff-action@v3
         with:
-          config: .github/cliff.toml # Assumes you have a config file
+          config: .github/cliff.toml
           args: --latest --strip header
         env:
           OUTPUT: CHANGELOG.md
 
-      # 3. FIX: Safely commit and push the updated CHANGELOG.md
+      # 3. Explicitly push to origin main
       - name: Commit and Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md
-          git commit -m "docs: auto-update CHANGELOG for ${{ github.event.release.tag_name }}"
-          git push origin main
+          # Only commit if there are actually changes to the file
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: auto-update CHANGELOG for ${{ github.event.release.tag_name }}" && git push origin main)
