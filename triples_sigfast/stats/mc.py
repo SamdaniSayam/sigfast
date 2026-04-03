@@ -18,7 +18,6 @@ from __future__ import annotations
 import numpy as np
 from numba import njit, prange
 
-
 # ── 1. Relative Error ────────────────────────────────────────────────────────
 
 @njit(parallel=True, cache=True)  # pragma: no cover

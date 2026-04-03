@@ -22,7 +22,6 @@ from pathlib import Path
 
 import numpy as np
 
-
 # ── Format detection ──────────────────────────────────────────────────────────
 
 _EXT_MAP: dict[str, str] = {

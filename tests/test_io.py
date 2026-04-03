@@ -19,7 +19,6 @@ import pytest
 
 from triples_sigfast.io.sim_reader import SimReader, _detect_format
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def make_root_file(path: str, histograms: dict) -> None:
@@ -184,8 +183,9 @@ class TestRootReader:
 
     def test_export_hdf5(self, root_file, tmp_path):
         pytest.importorskip("h5py")
-        from triples_sigfast.io.root_reader import RootReader
         import h5py
+
+        from triples_sigfast.io.root_reader import RootReader
         r     = RootReader(root_file)
         outh5 = str(tmp_path / "out.h5")
         r.export_hdf5(outh5)

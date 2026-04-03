@@ -9,13 +9,13 @@ Target: 100% line coverage, MCNP-standard edge cases.
 
 import numpy as np
 import pytest
+
 from triples_sigfast.stats.mc import (
     figure_of_merit,
     is_converged,
     propagate_error,
     relative_error,
 )
-
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
