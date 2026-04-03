@@ -2,11 +2,13 @@
 
 All notable changes to triples-sigfast will be documented here.
 
-## [Unreleased]
+## [1.4.1] - 2026-04-03
 
 ### Bug Fixes
 
 - Correct setuptools build backend in pyproject.toml
+
+- Correct version to 1.4.0 in setup.py
 
 
 ### CI/CD
@@ -18,12 +20,16 @@ All notable changes to triples-sigfast will be documented here.
 
 - Rewrite README for v1.4.0 — all modules documented
 
+- Auto-update CHANGELOG for main
+
 
 ### Releases
 
 - Bump version to 1.4.0 for PyPI deployment
 
 - V1.4.0 - nuclear physics, MC stats, multi-code readers, 323 tests, 100% coverage
+
+- Bump to 1.4.1 to fix PyPI upload version mismatch
 
 
 ## [1.4.0] - 2026-04-03
