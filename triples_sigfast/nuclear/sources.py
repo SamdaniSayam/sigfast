@@ -96,10 +96,10 @@ def watt_spectrum(
     E = np.asarray(energies, dtype=np.float64)
     # 1. Sanitize inputs to prevent negative values from hitting the sqrt function
     safe_E = np.maximum(E, 0.0)
-    
+
     # 2. Calculate using the safe array
     calculation = np.exp(-safe_E / a) * np.sinh(np.sqrt(b * safe_E))
-    
+
     # 3. Apply the mask for exactly zero or negative inputs
     flux = np.where(E > 0, calculation, 0.0)
 
