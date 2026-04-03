@@ -1,43 +1,37 @@
-# ============================================================
-#  Auto-generate CHANGELOG on every GitHub Release
-#  Can also be triggered manually from the Actions tab
-# ============================================================
-
 name: Generate Changelog
 
 on:
   release:
-    types: [published]
-  workflow_dispatch:
+    types: [published] # Runs when you publish a release
+
+permissions:
+  contents: write # Allows the robot to save the changelog to your repo
 
 jobs:
   changelog:
-    name: Update CHANGELOG.md
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout repository
+      # 1. FIX: Checkout the code and DON'T detach the head
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Download entire history so we can see all tags
+          ref: main      # Explicitly stay on the main branch
 
-      - name: Install git-cliff
-        run: |
-          CLIFF_VERSION=$(curl -s https://api.github.com/repos/orhun/git-cliff/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
-          curl -sSL "https://github.com/orhun/git-cliff/releases/download/${CLIFF_VERSION}/git-cliff-${CLIFF_VERSION#v}-x86_64-unknown-linux-musl.tar.gz" | tar -xz
-          sudo mv git-cliff-*/git-cliff /usr/local/bin/
-          git-cliff --version
+      # 2. Generate the changelog (using git-cliff or similar)
+      - name: Generate Changelog
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: .github/cliff.toml # Assumes you have a config file
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG.md
 
-      - name: Generate CHANGELOG.md
-        run: git-cliff --config cliff.toml --output CHANGELOG.md
-
-      - name: Commit and push CHANGELOG.md
+      # 3. FIX: Safely commit and push the updated CHANGELOG.md
+      - name: Commit and Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md
-          git commit -m "docs: auto-update CHANGELOG for ${{ github.ref_name }}" || echo "No changes to commit"
-          git push
+          git commit -m "docs: auto-update CHANGELOG for ${{ github.event.release.tag_name }}"
+          git push origin main
