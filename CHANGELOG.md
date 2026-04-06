@@ -2,6 +2,18 @@
 
 All notable changes to triples-sigfast will be documented here.
 
+## [1.6.0] - 2026-04-06
+
+### Documentation
+
+- Auto-update CHANGELOG for v1.5.3
+
+
+### Features
+
+- V1.6.0 - CLI, AutoReport, guided mode, 385 tests, 100% coverage
+
+
 ## [1.5.3] - 2026-04-05
 
 ### Bug Fixes
