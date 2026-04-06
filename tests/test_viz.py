@@ -326,6 +326,15 @@ class TestSaveExport:
         plot.save(path)
         assert os.path.exists(path)
 
+    def test_save_plotly_figure(self, tmp_path):
+        import plotly.graph_objects as go
+
+        plot = PhysicsPlot(interactive=False)
+        plot._figures.append(go.Figure(data=go.Scatter(x=[0, 1], y=[1, 2])))
+        path = str(tmp_path / "fig.html")
+        plot.save(path)
+        assert os.path.exists(path)
+
     def test_save_with_journal_name(self, plot, spectrum_data, tmp_path, capsys):
         energies, counts, *_ = spectrum_data
         plot.spectrum(energies, counts)

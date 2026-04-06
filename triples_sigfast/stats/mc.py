@@ -68,6 +68,36 @@ def relative_error(counts: np.ndarray) -> np.ndarray:
     return result
 
 
+@njit(cache=True)  # pragma: no cover
+def mean_relative_error(counts: np.ndarray) -> float:
+    """
+    Compute mean relative error across all non-zero bins.
+
+    Convenience wrapper around relative_error() that returns
+    a single scalar for summary reporting.
+
+    Parameters
+    ----------
+    counts : np.ndarray
+        Tally counts per bin.
+
+    Returns
+    -------
+    float
+        Mean R across all bins where counts > 0.
+    """
+    n = counts.shape[0]
+    total = 0.0
+    valid = 0
+    for i in range(n):
+        if counts[i] > 0.0:
+            total += 1.0 / np.sqrt(counts[i])
+            valid += 1
+    if valid == 0:
+        return np.inf
+    return total / valid
+
+
 # ── 2. Figure of Merit ───────────────────────────────────────────────────────
 
 

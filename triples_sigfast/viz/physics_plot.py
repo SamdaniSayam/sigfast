@@ -30,9 +30,10 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 # ── Journal style definitions ─────────────────────────────────────────────────
 
@@ -227,7 +228,7 @@ _JOURNAL_STYLES: dict[str, dict] = {
 def _is_jupyter() -> bool:
     """Detect if running inside a Jupyter notebook."""
     try:  # pragma: no cover
-        from IPython import get_ipython
+        from IPython.core.getipython import get_ipython
 
         shell = get_ipython()
         if shell is None:
@@ -313,6 +314,7 @@ class PhysicsPlot:
     def _apply_matplotlib_style(self) -> None:
         """Apply journal style to matplotlib rcParams."""
         import matplotlib as mpl
+        from cycler import cycler
 
         s = self._style
         mpl.rcParams.update(
@@ -321,7 +323,7 @@ class PhysicsPlot:
                 "figure.dpi": s["dpi"],
                 "font.size": s["font_size"],
                 "font.family": s["font_family"],
-                "axes.prop_cycle": mpl.cycler(color=s["color_cycle"]),
+                "axes.prop_cycle": cycler(color=s["color_cycle"]),
                 "axes.grid": s.get("grid", True),
                 "axes.linewidth": s.get("spine_width", 0.8),
                 "lines.linewidth": s["line_width"],
@@ -376,11 +378,11 @@ class PhysicsPlot:
 
     def spectrum(
         self,
-        energies: np.ndarray,
-        counts: np.ndarray,
-        smoothed: np.ndarray | None = None,
-        peaks: np.ndarray | None = None,
-        errors: np.ndarray | None = None,
+        energies: ArrayLike,
+        counts: ArrayLike,
+        smoothed: ArrayLike | None = None,
+        peaks: ArrayLike | None = None,
+        errors: ArrayLike | None = None,
         title: str = "Energy Spectrum",
         xlabel: str = "Energy (MeV)",
         ylabel: str = "Counts",
@@ -419,6 +421,18 @@ class PhysicsPlot:
         -------
         Figure object (plotly Figure or matplotlib Figure).
         """
+        energies = np.asarray(energies)
+        counts = np.asarray(counts)
+        smoothed = np.asarray(smoothed) if smoothed is not None else None
+        peaks = np.asarray(peaks) if peaks is not None else None
+        errors = np.asarray(errors) if errors is not None else None
+
+        energies = np.asarray(energies)
+        counts = np.asarray(counts)
+        smoothed = np.asarray(smoothed) if smoothed is not None else None
+        peaks = np.asarray(peaks) if peaks is not None else None
+        errors = np.asarray(errors) if errors is not None else None
+
         if self._interactive:
             return self._spectrum_plotly(  # pragma: no cover # pragma: no cover
                 energies,
@@ -526,6 +540,7 @@ class PhysicsPlot:
 
         plt.tight_layout()
         self._figures.append(fig)
+        plt.close(fig)
         return fig
 
     def _spectrum_plotly(  # pragma: no cover
@@ -697,6 +712,7 @@ class PhysicsPlot:
         ax.legend()
         plt.tight_layout()
         self._figures.append(fig)
+        plt.close(fig)
         return fig
 
     def _shielding_plotly(  # pragma: no cover
@@ -828,6 +844,7 @@ class PhysicsPlot:
         ax.set_aspect("equal")
         plt.tight_layout()
         self._figures.append(fig)
+        plt.close(fig)
         return fig
 
     def _dose_map_plotly(  # pragma: no cover
@@ -897,7 +914,7 @@ class PhysicsPlot:
             Convergence threshold. Default 0.05 (MCNP standard).
         """
         x = energies if energies is not None else np.arange(len(relative_errors))
-        converged = relative_errors < threshold
+        converged = np.less(relative_errors, threshold)
 
         if self._interactive:
             return self._convergence_plotly(  # pragma: no cover # pragma: no cover # pragma: no cover # pragma: no cover
@@ -951,6 +968,7 @@ class PhysicsPlot:
         )
         plt.tight_layout()
         self._figures.append(fig)
+        plt.close(fig)
         return fig
 
     def _convergence_plotly(
@@ -1022,7 +1040,7 @@ class PhysicsPlot:
         if not self._figures:
             raise RuntimeError("No figures to save. Call a plot method first.")
 
-        fig = self._figures[index]
+        fig = cast(Any, self._figures[index])
         ext = Path(filepath).suffix.lower()
         save_dpi = dpi or self._style["dpi"]
 
@@ -1043,7 +1061,7 @@ class PhysicsPlot:
         except ImportError:
             pass
 
-        fig.savefig(filepath, dpi=save_dpi, bbox_inches="tight")
+        cast(Any, fig).savefig(filepath, dpi=save_dpi, bbox_inches="tight")
         label = f" ({journal})" if journal else ""
         print(f"Saved{label} → {filepath}  [{save_dpi} DPI]")
 

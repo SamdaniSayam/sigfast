@@ -6,5 +6,10 @@ ruff
 uproot
 awkward
 matplotlib
+plotly
+click
+rich
+reportlab
+h5py
 pytest
 pytest-cov

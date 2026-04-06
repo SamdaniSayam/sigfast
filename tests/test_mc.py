@@ -79,6 +79,21 @@ class TestRelativeError:
         R = relative_error(counts)
         assert R.shape == (1_000_000,)
 
+    def test_mean_relative_error(self):
+        """mean_relative_error returns scalar mean of R across bins."""
+        from triples_sigfast.stats.mc import mean_relative_error
+
+        counts = np.array([100.0, 400.0, 10000.0])
+        mre = mean_relative_error(counts)
+        R = relative_error(counts)
+        np.testing.assert_allclose(mre, R.mean(), rtol=1e-6)
+
+    def test_mean_relative_error_all_zero_returns_inf(self):
+        from triples_sigfast.stats.mc import mean_relative_error
+
+        counts = np.array([0.0, 0.0])
+        assert np.isinf(mean_relative_error(counts))
+
 
 # ── figure_of_merit ──────────────────────────────────────────────────────────
 

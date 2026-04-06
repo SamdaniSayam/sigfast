@@ -4,3 +4,7 @@ pandas
 uproot
 awkward
 matplotlib
+plotly
+click
+rich
+reportlab
