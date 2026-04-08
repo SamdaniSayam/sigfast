@@ -59,6 +59,57 @@ array operations. However, no existing library simultaneously provides:
 data analysis layer that bridges simulation output and publication-ready
 results.
 
+# State of the Field
+
+Several Python libraries address parts of the simulation data analysis
+problem. `uproot` [@uproot] reads ROOT files but provides no analysis
+functions. `scipy` [@scipy] provides general signal processing but has
+no nuclear physics domain knowledge and no Monte Carlo statistical tools.
+`numpy` [@numpy] enables array operations but requires researchers to
+implement all physics formulas manually. ROOT's PyROOT bindings provide
+analysis within the ROOT ecosystem but are heavyweight, platform-dependent,
+and do not expose a beginner-accessible API. No existing library
+simultaneously provides GIL-free parallel processing, standards-compliant
+nuclear physics calculations, multi-code simulation readers, and a
+command-line interface accessible to researchers without programming
+experience. `triples-sigfast` fills this gap.
+
+# Software Design
+
+`triples-sigfast` is architected as a layered submodule system. The
+core layer (`triples_sigfast.core`) provides GIL-free signal processing
+via Numba JIT compilation. The domain layer comprises nuclear physics
+(`triples_sigfast.nuclear`), Monte Carlo statistics (`triples_sigfast.stats`),
+and simulation file readers (`triples_sigfast.io`). The presentation layer
+provides visualization (`triples_sigfast.viz`) and a command-line interface
+(`triples_sigfast.cli`). Each submodule is independently testable and
+importable. The library uses a universal `SimReader` abstraction that
+auto-detects simulation code format from file extension and delegates to
+format-specific backends, enabling researchers to switch simulation codes
+without modifying analysis code. All domain calculations are traceable to
+published international standards with explicit citations in docstrings.
+
+# Research Impact
+
+`triples-sigfast` directly enables reproducible simulation-based physics
+research by codifying standards-compliant calculations that researchers
+currently implement manually, inconsistently, and without version control.
+By providing ICRP 74 dose conversion, ANSI/ANS-6.4.3 buildup factors, and
+NUBASE2020 isotope data as versioned, tested library functions, the library
+ensures that published results are reproducible by any researcher who installs
+the same version. The command-line interface and AutoReport generator lower
+the barrier to entry for graduate students and junior researchers who need
+to analyze Monte Carlo output but lack programming experience, directly
+supporting the training of the next generation of computational physicists.
+
+# AI Usage Disclosure
+
+The author used Claude (Anthropic) as a coding assistant during development
+of this library. All scientific content, physics formulas, standard
+references, and design decisions were verified by the author against primary
+sources. The AI assistant was used for code generation, debugging, and
+documentation drafting only.
+
 # Core Innovation: GIL-Free Parallel Execution
 
 The Python GIL prevents multiple threads from executing Python bytecode
